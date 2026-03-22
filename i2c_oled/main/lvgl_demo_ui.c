@@ -77,6 +77,7 @@ void example_lvgl_demo_ui(lv_disp_t *disp)
 
     label = lv_label_create(scr);
     lv_label_set_text(label, "Initializing...");
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_28, LV_PART_MAIN);
     ESP_LOGI(TAG, "Label created");
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
