@@ -17,6 +17,8 @@
 #include "lvgl.h"
 #include "esp_lvgl_port.h"
 
+#include "driver/gpio.h"
+
 static lv_obj_t *label;
 static const char *TAG = "example";
 
@@ -24,6 +26,7 @@ static const char *TAG = "example";
 #define PLAYERS 4
 #define START_TIME 840000
 #define INCREMENT 10000
+#define BUTTON_PIN 4
 
 volatile int32_t playerTime[PLAYERS] = {START_TIME, START_TIME, START_TIME, START_TIME};
 volatile int currentPlayer = 0;
@@ -32,14 +35,22 @@ volatile bool buttonPressed = false;
 static void lvgl_update_timer(lv_timer_t *timer);
 
 void timer_task(void* args) {
+    int last_button_state = 1;
     while(1) {
+        int button_state = gpio_get_level(BUTTON_PIN);
+        if(last_button_state == 1 && button_state == 0) {
+            buttonPressed = true;
+        }
+        last_button_state = button_state;
         playerTime[currentPlayer] -= 10;
 
-        if(playerTime[currentPlayer] <= 0) {
-            playerTime[currentPlayer] = INCREMENT;
-            currentPlayer = (currentPlayer + 1) % PLAYERS;
-        } else if(buttonPressed) {
+        if(buttonPressed) {
             playerTime[currentPlayer] += INCREMENT;
+            currentPlayer = (currentPlayer + 1) % PLAYERS;
+            buttonPressed = false;
+        }
+        else if(playerTime[currentPlayer] <= 0) {
+            playerTime[currentPlayer] = INCREMENT;
             currentPlayer = (currentPlayer + 1) % PLAYERS;
         }
 

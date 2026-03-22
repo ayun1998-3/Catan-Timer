@@ -15,6 +15,7 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "esp_lvgl_port.h"
+#include "driver/gpio.h"
 
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_SH1107
 #include "esp_lcd_sh1107.h"
@@ -52,9 +53,17 @@ static const char *TAG = "example";
 extern void example_lvgl_demo_ui(lv_disp_t *disp);
 extern void timer_task(void* args);
 
-
+#define BUTTON_PIN 4
+gpio_config_t io_conf = {
+    .pin_bit_mask = (1ULL << BUTTON_PIN),
+    .mode = GPIO_MODE_INPUT,
+    .pull_up_en = GPIO_PULLUP_ENABLE, // important for logic 0 press
+    .pull_down_en = GPIO_PULLDOWN_DISABLE,
+    .intr_type = GPIO_INTR_DISABLE
+};
 void app_main(void)
 {
+    gpio_config(&io_conf);
     xTaskCreate(timer_task, "timer_task", 2048, NULL, 1, NULL);
 
     ESP_LOGI(TAG, "Initialize I2C bus");
